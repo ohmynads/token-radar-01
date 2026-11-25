@@ -295,7 +295,7 @@
         'implied = round( tvl_usd x ' + m.base_multiple + ' x (1 + clamp(change_7d, ' + m.growth_floor + ', ' + m.growth_cap + ') / 100 x ' + m.growth_weight + ') x (' + m.maturity_floor + ' + min(age_days, ' + m.maturity_days + ') / ' + m.maturity_days + ' x ' + m.maturity_range + ') )'
       ),
       el('p', { class: 'sub', text: 'TVL and seven-day growth come from the snapshot. Age is the time since the protocol was first listed, the best record of how long it has run with no token; an unlisted age uses ' + m.unknown_age_days + ' days. The early radar is every pre-token protocol below the watchlist floor, by TVL, and the live-token protocols are set aside with their market caps shown.' }),
-      el('p', { class: 'sub', text: 'The ' + m.base_multiple + ' base multiple is fitted, not assumed: it is the median market-cap/TVL of 100 live-token protocols in this snapshot with ratios 0.01-2.0. Category medians were too noisy to use (Risk Curators has one live peer), and a log-log fit was too dispersed (residual std 1.3 log units), so the global median is used and the range is wide: treat every implied value as an order of magnitude, not a price.' })
+      el('p', { class: 'sub', text: 'The ' + m.base_multiple + ' base multiple is fitted at run time, not assumed: it is the median market-cap/TVL of the live-token protocols in this snapshot with ratios 0.01-2.0. Category medians were too noisy to use (Risk Curators has one live peer), and a log-log fit was too dispersed (residual std 1.3 log units), so the global median is used and the range is wide: treat every implied value as an order of magnitude, not a price.' })
     );
   }
 

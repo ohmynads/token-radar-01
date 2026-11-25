@@ -23,9 +23,10 @@
 //     implied     = max(1, round(base * growthMult * maturity))
 //
 // The fitted multiple is the median market-cap/TVL of the snapshot's live-token
-// protocols, trimmed to ratios between 0.01 and 2.0. For this snapshot that is 0.205
-// over 100 peers; the mean is 5.0, dragged up by outliers (one peer sits at 18.96),
-// which is why the median, not the mean, is the fit. Two other fits were tried and
+// protocols, trimmed to ratios between 0.01 and 2.0. For this snapshot that is 0.189
+// over 100 peers (the untrimmed median over 129 peers is 0.205); the mean is 5.0,
+// dragged up by outliers (one peer sits at 18.96), which is why the median, not
+// the mean, is the fit. Two other fits were tried and
 // rejected, and the reasons are part of the model, not an afterthought:
 //   * Category medians: the categories that matter have one to three live peers.
 //     Risk Curators has a single live peer at a ratio of 2.98; Onchain Capital
