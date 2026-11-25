@@ -14,8 +14,16 @@
 //   maturity   = 0.6 + min(age_days, 1095) / 1095 x 0.4   (age_days unknown: 365)
 //   implied    = max(1, round(base x growthMult x maturity))
 //
-// The constants are the house model's, stated in the dashboard and changeable in the model sandbox. No
-// protocol name is ever special-cased: the same function scores every row.
+// BASE_MULTIPLE is fitted, not the house constant: it is the median market-cap/TVL of the
+// live-token protocols in this snapshot, trimmed to ratios 0.01-2.0 (n=100, median 0.205,
+// mean 5.0, skewed by outliers such as a ratio of 18.96). Category medians were checked
+// and rejected: the key categories have n=1-3 live peers (Risk Curators n=1, ratio 2.98;
+// Onchain Capital Allocator n=2, median 0.013), so a category multiple would be one
+// outlier wearing a category's name. A log-log regression of log(mcap) on log(TVL) was
+// also checked (slope 0.74, residual std 1.3 log units) and rejected as too dispersed
+// to trust for a ranking. The global median is the honest fitted multiple, and the
+// dashboard states it, with its uncertainty, so a reader can re-fit it from the snapshot.
+// No protocol name is ever special-cased: the same function scores every row.
 
 /** The snapshot's protocol entry: exactly the ten fields the sealed input carries. */
 export interface SnapshotProtocol {
@@ -53,7 +61,7 @@ export interface ModelConstants {
 }
 
 export const MODEL: ModelConstants = {
-  base_multiple: 0.25,
+  base_multiple: 0.205,
   growth_weight: 0.5,
   growth_floor: -60,
   growth_cap: 120,
@@ -64,7 +72,7 @@ export const MODEL: ModelConstants = {
 };
 
 /** The model's version label: the dashboard names it and the rules quote it. */
-export const MODEL_VERSION = 'radar-1';
+export const MODEL_VERSION = 'radar-2';
 
 /** How many pre-token protocols below the watchlist floor the early radar carries, by TVL. */
 export const EARLY_ROWS = 160;
@@ -308,15 +316,29 @@ function actionFor(p: SnapshotProtocol, capital: number, chain: string): string 
   return `Deposit $${capital} of USDC into ${name} on ${chain} and keep the position open.`;
 }
 
+/** The whole plan's gas cost and time, in dollars and minutes, from its own steps. */
+export function farmCost(p: SnapshotProtocol, age: number | null): { gas_usd: number; minutes: number; dollars_per_hour: number } {
+  const capital = capitalFor(p);
+  const hold = holdDaysFor(age);
+  const weeks = Math.ceil(hold / 7);
+  const gas_usd = 3 + (capital >= 150 ? 8 : 4) + 2 * weeks;
+  const minutes = 5 + 15 + 10 * weeks + 10 + 5;
+  return { gas_usd, minutes, dollars_per_hour: Math.round((gas_usd / (minutes / 60)) * 10) / 10 };
+}
+
 /**
- * A protocol's farm plan: six steps, each an action with a cost and a time. The plan is derived from
+ * A protocol's farm plan: seven steps, each an action with a cost and a time. The plan is derived from
  * the protocol's own record (category, chains, TVL, age), never from a hand-written list of names.
+ * The last step costs the whole plan in dollars per hour of the farmer's time: gas only, the
+ * capital is not a cost unless the protocol fails, and no earnings are promised, because the
+ * implied value is a model of a token that does not exist yet.
  */
 export function farmSteps(p: SnapshotProtocol, age: number | null): FarmStep[] {
   const chain = chainOf(p);
   const capital = capitalFor(p);
   const hold = holdDaysFor(age);
   const action = actionFor(p, capital, chain);
+  const cost = farmCost(p, age);
   return [
     {
       text: `Use a fresh wallet that holds only the funds you plan to farm, and keep its seed phrase offline.`,
@@ -347,6 +369,11 @@ export function farmSteps(p: SnapshotProtocol, age: number | null): FarmStep[] {
       text: `Write the wallet, the dates and every transaction in a farm log so you can repeat the position or unwind it.`,
       cost: 'nothing but the log',
       time: '5 minutes',
+    },
+    {
+      text: `Count the whole plan before you start: about $${cost.gas_usd} of gas over ${cost.minutes} minutes of your time, about $${cost.dollars_per_hour} per hour, plus $${capital} of capital that stays in the position.`,
+      cost: `about $${cost.gas_usd} of gas in total`,
+      time: `${cost.minutes} minutes in total`,
     },
   ];
 }

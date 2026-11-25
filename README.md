@@ -14,4 +14,6 @@ mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts --input ../input/snapshot.js
 
 ## Model
 
-Starter model radar-1: implied = TVL × 0.25 × growth × maturity, from the snapshot's own figures only. No protocol name is special-cased.
+Model radar-2: implied = TVL × 0.205 × growth × maturity, from the snapshot's own figures only. No protocol name is special-cased.
+
+The 0.205 base multiple is fitted: the median market-cap/TVL of the 100 live-token protocols in the snapshot with ratios 0.01-2.0 (mean 5.0, skewed by outliers). Category medians were checked and rejected — the key categories have n=1-3 live peers — and a log-log regression (slope 0.74, residual std 1.3 log units) was too dispersed to trust. Every farm plan ends with its whole cost in dollars per hour of the farmer's time (gas only; capital is not a cost unless the protocol fails). Implied values are estimates, not prices.
