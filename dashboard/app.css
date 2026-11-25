@@ -1,4 +1,4 @@
-/* Token Radar's plain theme. The five palette values, two radii and two families are the whole style;
+/* Token Radar's plain theme, radar-2. The five palette values, two radii and two families are the whole style;
    everything else is spacing, a hairline and a type step. */
 :root {
   --canvas: #f2f5f3;
